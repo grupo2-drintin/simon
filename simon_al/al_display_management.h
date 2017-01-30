@@ -6,11 +6,8 @@
 #include "al_img_prop.h"
 #include <stdio.h>
 
-#define LEFT        0   //hacerlo con enum pero me olvide como se hace y me anda mal internet
-#define RIGHT       1   //quedaria en otro archivo asi lo pueden usar todos los modulos
-#define TOP         2   //ES MUY IMPORTANTE QUE TENGA ESTE ORDEN MANGA DE GILES
-#define BOTTOM      3   //NO CAMBIAR EL ORDEN CARAJO
-#define LIGHTS_OFF  4   //NO   CAMBIAR   EL   ORDEN,   HE   DICHO.
+enum colores {LEFT, RIGHT, TOP, BOTTOM, LIGHTS_OFF};
+//eventualmente esto deberia tener el nombre de los colores
 
 #define EXIT_SIMON  -1  //VALE PONERLE EL VALOR QUE SE LES PLAZCA
 
