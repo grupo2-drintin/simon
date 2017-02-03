@@ -1,69 +1,96 @@
+#include "simon_game.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "char_buffer.h"
 #include "backend_simon.h"
 
-#ifndef STATUS_FLAGS
-#define STATUS_FLAGS
-#define S_ERROR     2
-#define S_CONTINUE  1
-#define S_GAMEOVER  0
-#endif //STATUS FLAGS
 
-#define CB_INIT_SIZE 200    //Tamano inicial del buffer
+#if     IO == IO_ALLEGRO
+#include "al_display_management.h"
+#elif   IO == IO_RPI
+#include "rpi_simon.h"
+#else
+#error
+#endif  //IO
 
+
+
+#define CB_INIT_SIZE    100  //Tamano inicial del buffer
 
 
 
 int simon_game (void)
 {
-    static FILE f_highscore;
+    static FILE * f_highscore;
     int highscore;
     int current_score = 0;
     int status = S_CONTINUE;
-    
+
     char_buffer_t correct_sequence = create_cb(CB_INIT_SIZE);    
 
-    
-    if((f_highscore = fopen("highscores.txt", "r")) == NULL )
+
+    if (inicializacion()==-1)
     {
         status = S_ERROR;
-    } 
+    }
     else
     {
-        fscanf (f_highscore, "%d", &highscore);
-        fclose (f_highscore);
-    }
-    
-  
-    while (status == S_CONTINUE)  
-    {
-        srand(__TIME__);
-        write_cb(&correct_sequence, (char)(rand()%4));
-        display_sequence(correct_sequence);
-        
-        if (user_attempt(correct_sequence) == WRONG_ATTEMPT)
-        {   
-            status = S_GAMEOVER;
-        }    
+        if((f_highscore = fopen("highscores.txt", "r")) == NULL )
+        //este bloque if obtiene el highscore actual
+        {
+            status = S_ERROR;
+        } 
         else
         {
-            if (++current_score >= highscore)
+            fscanf (f_highscore, "%d", &highscore);
+            fclose (f_highscore);
+        }
+    
+        srand(clock());
+
+#if IO == IO_ALLEGRO
+        int event_source = kb_or_mouse();
+#endif  //IO           
+     
+        while (status == S_CONTINUE)  
+        //se ejecuta si no hubo errores y el jugador no perdio
+        {
+            write_cb(&correct_sequence, (char)(rand()%4));//agrega un color
+            display_sequence(correct_sequence);//muestra toda la secuencia
+
+#if IO == IO_ALLEGRO
+            if (user_attempt(correct_sequence, event_source) == WRONG_ATTEMPT)
+#else                       
+            if (user_attempt(correct_sequence) == WRONG_ATTEMPT)//jugar!
+#endif //IO
+            {   
+                status = S_GAMEOVER; //el jugador se equivoco
+            }    
+            else
             {
-                highscore = current_score;
+                if (++current_score > highscore)
+                //actualizar el highscore
+                {
+                    highscore = current_score;
+                
+                    if((f_highscore = fopen("highscores.txt", "w")) == NULL )
+                    {
+                        status = S_ERROR;
+                    } 
+                    else
+                    {
+                        fprintf(f_highscore, "%d", highscore);
+                        fclose(f_highscore);
+                    }
+                }
             }    
         }
     }
-    
-    if((f_highscore = fopen("highscores.txt", "w")) == NULL )
-    {
-        status = S_ERROR;
-    } 
-    else
-    {
-        fprintf(f_highscore, "%d", highscore);
-        fclose(f_highscore);
-    }
+       
+    finalizacion();     //hay que finalizar aunque haya habido un error 
+    free_cb(&correct_sequence);
     
     return status;
 }
+
