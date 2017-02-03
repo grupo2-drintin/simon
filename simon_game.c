@@ -37,9 +37,17 @@ int simon_game (void)
     else
     {
         if((f_highscore = fopen("highscores.txt", "r")) == NULL )
-        //este bloque if obtiene el highscore actual
+        //este bloque if obtiene el highscore actual o crea un archivo para los highscore
         {
-            status = S_ERROR;
+            if((f_highscore = fopen("highscores.txt", "w")) == NULL )
+            {
+                status = S_ERROR;
+            }
+            else
+            {
+                fputc(0, f_highscore);  //si no habia highscore, empieza en 0
+                fclose(f_highscore);
+            }
         } 
         else
         {
@@ -62,15 +70,15 @@ int simon_game (void)
 #if IO == IO_ALLEGRO
             if (user_attempt(correct_sequence, event_source) == WRONG_ATTEMPT)
 #else                       
-            if (user_attempt(correct_sequence) == WRONG_ATTEMPT)//jugar!
-#endif //IO
+            if (user_attempt(correct_sequence) == WRONG_ATTEMPT)
+#endif //IO: dependiendo de si se usa allegro o rpi user_attempt tiene != param.
             {   
                 status = S_GAMEOVER; //el jugador se equivoco
             }    
             else
             {
                 if (++current_score > highscore)
-                //actualizar el highscore
+                //actualizar el highscore si hace falta, en la var. y el arch.
                 {
                     highscore = current_score;
                 
@@ -91,6 +99,6 @@ int simon_game (void)
     finalizacion();     //hay que finalizar aunque haya habido un error 
     free_cb(&correct_sequence);
     
-    return status;
+    return status;      //status va a indicar si hubo error o no
 }
 
