@@ -15,6 +15,7 @@
 #define BOTTOM_SPRITE_F "bottom_light.png"
 #define LEFT_SPRITE_F   "left_light.png"
 
+#define TOP_BEEP_F      "top_beep.wav"
 
 #define LEFT_X    (SCREEN_CENTER_X - SPRITE_DISTANCE - SPRITE_W/2)
 #define LEFT_Y    (SCREEN_CENTER_Y - SPRITE_W/2)

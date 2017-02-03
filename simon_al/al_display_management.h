@@ -3,37 +3,36 @@
 
 #include "allegro5/allegro.h"
 #include "allegro5/allegro_image.h"
+#include "allegro5/allegro_audio.h"
+#include "allegro5/allegro_acodec.h"
 #include "al_img_prop.h"
 #include <stdio.h>
 
-enum colores {LEFT, RIGHT, TOP, BOTTOM, LIGHTS_OFF};
-//eventualmente esto deberia tener el nombre de los colores
+#define EXIT_SIMON  -1
 
-#define EXIT_SIMON  -1  //VALE PONERLE EL VALOR QUE SE LES PLAZCA
-
-static ALLEGRO_DISPLAY *main_display = NULL;        //no se si poner esto aca o en el .c
-static ALLEGRO_TIMER *fps_timer = NULL;
-static ALLEGRO_BITMAP *simon_background = NULL;
-static ALLEGRO_BITMAP *top_light = NULL;
-static ALLEGRO_BITMAP *right_light = NULL;
-static ALLEGRO_BITMAP *bottom_light = NULL;
-static ALLEGRO_BITMAP *left_light = NULL;
-static ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-static ALLEGRO_EVENT ev;
+enum lights { LEFT, RIGHT, TOP, BOTTOM, LIGHTS_OFF }; //quedaria en otro archivo asi lo pueden usar todos los modulos
+enum src_of_event { NO_SOURCE, SOURCE_MOUSE, SOURCE_KB }; //source of event, de donde tomar input
 
 int inicializacion (void);
 
-/* Funcion get_event()
- * DEVUELVE: int correspondiente al codigo de la tecla apretada
- * Flecha izquierda: 0
- * Flecha derercha:  1
- * Flecha arriba:    2
- * Flecha abajo:     3
- * Tecla escape:     -1
- */
-int get_event (void);
+void finalizacion (void);
 
-/* Funcion turn_light_on:
+/* Funcion get_event
+ * 
+ * RECIBE: int correspondiente al tipo de input que recibe
+ *  1: mouse
+ *  2: teclado
+ * DEVUELVE: int correspondiente al codigo de la tecla apretada
+ *  0: flecha izquierda
+ *  1: flecha derercha
+ *  2: flecha arriba
+ *  3: flecha abajo
+ * -1: tecla escape 
+ */
+int get_event (int);
+
+/* Funcion turn_light_on
+ * 
  * RECIBE: int de 0 a 4
  *  0: enciende solo la luz izquierda
  *  1: enciende solo la luz derecha
@@ -42,7 +41,22 @@ int get_event (void);
  *  4: apaga todas las luces
  */
 void turn_light_on (int);
-void finalizacion (void);
+
+/* Funcion play_beep
+ * 
+ * RECIBE: int de 0 a 4
+ *  0: prende el sonido del boton izquierdo
+ *  1: prende el sonido del boton derecho
+ *  2: prende el sonido del boton superior
+ *  3: prende el sonido del boton inferior
+ *  4: silencio
+ */
+void play_beep (int);
+
+/*
+ * 
+ */
+int kb_or_mouse (void);
 
 
 #endif /* AL_DISPLAY_MANAGEMENT_H */

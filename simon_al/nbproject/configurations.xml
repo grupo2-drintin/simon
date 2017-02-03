@@ -42,6 +42,8 @@
           <linkerLibItems>
             <linkerOptionItem>`pkg-config --libs allegro-5.0`</linkerOptionItem>
             <linkerOptionItem>`pkg-config --libs allegro_image-5.0`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs allegro_acodec-5.0`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs allegro_audio-5.0`</linkerOptionItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
