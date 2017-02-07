@@ -7,13 +7,13 @@ void main (void)
 //NOTA: ESTE MAIN DE VERGA ES SOLO PARA CHEQUEAR QUE TODO FUNCIONE.
 //POR AHORA, JUEVES A LA NOCHE, LO QUE NO ANDA ES LA FINALIZACION
 {
-    inicializacion();
+    inicializacion(5);
+    wrong_sequence();
     new_highscore(123);
+    correct_sequence();
+
     int key = LIGHTS_OFF;
     turn_light_on(key);
-    correct_sequence();
-    wrong_sequence();
-    show_highscore(123);
     int source_of_events = kb_or_mouse();
     while(key != EXIT_SIMON)
     {

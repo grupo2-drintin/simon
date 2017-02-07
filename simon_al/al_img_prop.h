@@ -1,28 +1,31 @@
 #ifndef IMG_PROP_H
 #define IMG_PROP_H
 
-#define SCREEN_H        1114            //ancho del fondo
-#define SCREEN_W        910             //altura del fondo
-#define SCREEN_CENTER_X (SCREEN_W/2)    //posicion del centro de pantalla en eje X
-#define SCREEN_CENTER_Y (SCREEN_H/2)    //posicion del centro de pantalla en eje Y
+#define SCREEN_H        780             //ancho del fondo
+#define SCREEN_W        637             //altura del fondo
+#define SIMON_CENTER_X  318     //eje de simetria de los botones del simon en eje x
+#define SIMON_CENTER_Y  443     //eje de simetria de los botones del simon en eje y
 
-#define SPRITE_W        128             //ancho de los sprites de botones
-#define SPRITE_DISTANCE 150             //distancia de los botones desde el centro de pantalla
+#define BUTTON_W        165             //ancho de loS botones
+#define BUTTON_D        127             //distancia de los botones desde el centro de simetria
+#define SPRITE_H        154             //altura de los sprites de hongos
 
-#define BACKGROUND_F    "simon_background.png"
-#define TOP_SPRITE_F    "top_light.png"
-#define RIGHT_SPRITE_F  "right_light.png"
-#define BOTTOM_SPRITE_F "bottom_light.png"
-#define LEFT_SPRITE_F   "left_light.png"
+#define BACKGROUND_F    "mario_background.png"
+#define TOP_SPRITE_F    "blue_mush.png"
+#define RIGHT_SPRITE_F  "yellow_mush.png"
+#define BOTTOM_SPRITE_F "red_mush.png"
+#define LEFT_SPRITE_F   "green_mush.png"
 
-#define LEFT_X    (SCREEN_CENTER_X - SPRITE_DISTANCE - SPRITE_W/2)
-#define LEFT_Y    (SCREEN_CENTER_Y - SPRITE_W/2)
-#define RIGHT_X   (SCREEN_CENTER_X + SPRITE_DISTANCE - SPRITE_W/2)
-#define RIGHT_Y   (SCREEN_CENTER_Y - SPRITE_W/2)
-#define TOP_X     (SCREEN_CENTER_X - SPRITE_W/2)
-#define TOP_Y     (SCREEN_CENTER_Y - SPRITE_DISTANCE - SPRITE_W/2)
-#define BOTTOM_X  (SCREEN_CENTER_X - SPRITE_W/2)
-#define BOTTOM_Y  (SCREEN_CENTER_Y + SPRITE_DISTANCE - SPRITE_W/2)
+/* coordenadas de la esquina superior izquierda de los botones */
+
+#define LEFT_X    (SIMON_CENTER_X - BUTTON_D - BUTTON_W)
+#define LEFT_Y    (SIMON_CENTER_Y - BUTTON_W/2)
+#define RIGHT_X   (SIMON_CENTER_X + BUTTON_D)
+#define RIGHT_Y   (SIMON_CENTER_Y - BUTTON_W/2)
+#define TOP_X     (SIMON_CENTER_X - BUTTON_W/2)
+#define TOP_Y     (SIMON_CENTER_Y - BUTTON_D - BUTTON_W)
+#define BOTTOM_X  (SIMON_CENTER_X - BUTTON_W/2)
+#define BOTTOM_Y  (SIMON_CENTER_Y + BUTTON_D)
 
 #define TOP_BEEP_F      "top_beep.wav"
 #define RIGHT_BEEP_F    "right_beep.wav"

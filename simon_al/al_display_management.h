@@ -18,7 +18,7 @@
 enum lights { LEFT, RIGHT, TOP, BOTTOM, LIGHTS_OFF }; //quedaria en otro archivo asi lo pueden usar todos los modulos
 enum src_of_event { NO_SOURCE, SOURCE_MOUSE, SOURCE_KB }; //source of event, de donde tomar input
 
-int inicializacion (void);
+int inicializacion (int);
 
 void finalizacion (void);
 
@@ -74,11 +74,14 @@ void new_highscore(int);
 
 /* Funcion show_highscore
  * 
- * RECIBE: highscore actual
- * Indica en el display principal
+ * Carga en el display principal
  * cual es el highscore actual
+ * (no lo muestra, solamente lo 
+ * carga. Para mostrarlo, es 
+ * necesario invocar a la funcion
+ * al_flip_display(). )
  */
-void show_highscore (int);
+void draw_highscore ();
 
 /* Funcion wrong_sequence
  * 
@@ -96,6 +99,8 @@ void wrong_sequence (void);
  * a una secuencia correcta sincronizadamente
  */
 void correct_sequence (void);
+
+void draw_bg_and_hs (void);  
 
 
 
