@@ -140,7 +140,7 @@ int is_full_cb (char_buffer_t cb)
     /* Condicion para que el buffer este lleno: el numero de caracteres que se ha
      * escrito es igual al tamano del buffer completo
      * Si esta lleno, chequea si se puede agrandar*/
-    if (cb.n_written != cb.size)
+    if (cb.n_written == cb.size)
     {
         if (cb.size + CB_STEP <= CB_MAX_SIZE)
         {
