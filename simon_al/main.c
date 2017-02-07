@@ -5,14 +5,15 @@
 void main (void) 
 
 //NOTA: ESTE MAIN DE VERGA ES SOLO PARA CHEQUEAR QUE TODO FUNCIONE.
-//POR AHORA, JUEVES A LA NOCHE, LO QUE NO AnDA ES LA FINALIZACION
+//POR AHORA, JUEVES A LA NOCHE, LO QUE NO ANDA ES LA FINALIZACION
 {
     inicializacion();
     new_highscore(123);
     int key = LIGHTS_OFF;
-//    turn_light_on(key);
-//    wrong_sequence();
-//    show_highscore(123);
+    turn_light_on(key);
+    correct_sequence();
+    wrong_sequence();
+    show_highscore(123);
     int source_of_events = kb_or_mouse();
     while(key != EXIT_SIMON)
     {

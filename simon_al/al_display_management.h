@@ -63,9 +63,39 @@ void play_beep (int);
  */
 int kb_or_mouse (void);
 
+/* Funcion new_highscore
+ * 
+ * RECIBE: int con el nuevo highscore
+ * Abre un pop up indicando que se ha llegado
+ * a un nuevo highscore y cual es el valor 
+ * del mismo
+ */
+void new_highscore(int);
+
+/* Funcion show_highscore
+ * 
+ * RECIBE: highscore actual
+ * Indica en el display principal
+ * cual es el highscore actual
+ */
 void show_highscore (int);
+
+/* Funcion wrong_sequence
+ * 
+ * Lleva a cabo la animacion y 
+ * reproduce el sonido correspondientes
+ * a una secuencia incorrecta 
+ * sincronizadamente
+ */
 void wrong_sequence (void);
-void new_highscore (int);
+
+/* Funcion correct_sequence
+ * 
+ * Lleva a cabo la animacion y 
+ * reproduce el sonido correspondientes
+ * a una secuencia correcta sincronizadamente
+ */
+void correct_sequence (void);
 
 
 

@@ -28,8 +28,10 @@
 #define RIGHT_BEEP_F    "right_beep.wav"
 #define BOTTOM_BEEP_F   "bottom_beep.wav"
 #define LEFT_BEEP_F     "left_beep.wav"
-#define LOSING_MUSIC_F  "losing_music.wav"
-#define LOSING_MUSIC_TIME 3.0               //duracion de losing music
+#define WRONG_SEQUENCE_MUSIC_F  "mario_dies.wav"
+#define WRONG_SEQUENCE_MUSIC_TIME 3.0               //duracion de wrong sequence music
+#define CORRECT_SEQUENCE_MUSIC_F "coin.wav"
+#define CORRECT_SEQUENCE_MUSIC_TIME 0.5             //duracion de correct sequence music
 
 
 #endif /* IMG_PROP_H */

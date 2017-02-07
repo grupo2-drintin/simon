@@ -13,7 +13,8 @@ static ALLEGRO_SAMPLE   *top_beep = NULL;
 static ALLEGRO_SAMPLE   *right_beep = NULL;
 static ALLEGRO_SAMPLE   *bottom_beep = NULL;
 static ALLEGRO_SAMPLE   *left_beep = NULL;
-static ALLEGRO_SAMPLE   *losing_music = NULL;
+static ALLEGRO_SAMPLE   *wrong_sequence_music = NULL;
+static ALLEGRO_SAMPLE   *correct_sequence_music = NULL;
 static ALLEGRO_FONT     *font = NULL;
 static ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 static ALLEGRO_EVENT ev;
@@ -137,9 +138,13 @@ int inicializacion(void)
         al_uninstall_audio();
         return -1;
     }
-    else if( !(losing_music = al_load_sample(LOSING_MUSIC_F )))
+    else if( !(wrong_sequence_music = al_load_sample(WRONG_SEQUENCE_MUSIC_F )))
     {
-        fprintf(stderr, "failed to load losing_music\n");
+        fprintf(stderr, "failed to load wrong sequence music\n");
+    }
+    else if( !(correct_sequence_music = al_load_sample(CORRECT_SEQUENCE_MUSIC_F )))
+    {
+        fprintf(stderr, "failed to load correct_sequence_music\n");
     }
     else if( !(top_beep = al_load_sample("top_beep.wav" )))
     {
@@ -410,18 +415,18 @@ void new_highscore( int highscore )
 {
     char hs_value[4];
     sprintf( hs_value, "%d", highscore );
-    char hs_word[15];
+    char hs_word[27];
     strcpy( hs_word, "Your new highscore is ");
     
     char * hs_final = strcat( hs_word , hs_value );
     
     al_show_native_message_box(
-    main_display,
+    NULL,
     "New highscore",
     "Congratulations!",
     hs_final,
     "close",
-    ALLEGRO_MESSAGEBOX_OKCANCEL
+    ALLEGRO_MESSAGEBOX_OK_CANCEL
     );
 }    
     
@@ -441,9 +446,9 @@ void show_highscore( int highscore )
 
 void wrong_sequence ( void )
 {
-    al_play_sample( losing_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
+    al_play_sample( wrong_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
     int i;
-    for ( i = LOSING_MUSIC_TIME/0.2 ; i > 0 ; i-- )
+    for ( i = WRONG_SEQUENCE_MUSIC_TIME/0.2 ; i > 0 ; i-- )
     {
         al_draw_bitmap(left_light, LEFT_X, LEFT_Y, 0);
         al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y, 0);
@@ -459,5 +464,25 @@ void wrong_sequence ( void )
 
 void correct_sequence ( void )
 {
+    al_play_sample( correct_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
     
+    al_draw_bitmap(simon_background, 0, 0, 0);
+    al_draw_bitmap(left_light, LEFT_X, LEFT_Y, 0);
+    al_flip_display();
+    al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
+    al_draw_bitmap(top_light, TOP_X, TOP_Y, 0);
+    al_flip_display();
+    al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
+    al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y, 0);
+    al_flip_display();
+    al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
+    al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y, 0);
+    al_flip_display();
+    al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
+    
+    /* Poner en display el fondo por medio segundo para 
+       que sea claro cuando cominenza la nueva secuencia */
+    al_draw_bitmap(simon_background, 0, 0, 0);
+    al_flip_display();
+    al_rest(0.5);
 }
