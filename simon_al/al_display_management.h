@@ -5,8 +5,13 @@
 #include "allegro5/allegro_image.h"
 #include "allegro5/allegro_audio.h"
 #include "allegro5/allegro_acodec.h"
+#include "allegro5/allegro_font.h" //manejo de fonts
+#include "allegro5/allegro_ttf.h" //Manejo de ttfs
+#include "allegro5/allegro_native_dialog.h" //Manejo de ttfs
 #include "al_img_prop.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define EXIT_SIMON  -1
 
@@ -57,6 +62,11 @@ void play_beep (int);
  * 
  */
 int kb_or_mouse (void);
+
+void show_highscore (int);
+void wrong_sequence (void);
+void new_highscore (int);
+
 
 
 #endif /* AL_DISPLAY_MANAGEMENT_H */

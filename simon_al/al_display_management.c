@@ -1,16 +1,20 @@
 #include "al_display_management.h"
 
-static ALLEGRO_DISPLAY *main_display = NULL;
-static ALLEGRO_TIMER *fps_timer = NULL;
-static ALLEGRO_BITMAP *simon_background = NULL;
-static ALLEGRO_BITMAP *top_light = NULL;
-static ALLEGRO_BITMAP *right_light = NULL;
-static ALLEGRO_BITMAP *bottom_light = NULL;
-static ALLEGRO_BITMAP *left_light = NULL;
-static ALLEGRO_SAMPLE *top_beep = NULL;
-static ALLEGRO_SAMPLE *right_beep = NULL;
-static ALLEGRO_SAMPLE *bottom_beep = NULL;
-static ALLEGRO_SAMPLE *left_beep = NULL;
+//0043943829
+
+static ALLEGRO_DISPLAY  *main_display = NULL;
+static ALLEGRO_TIMER    *fps_timer = NULL;
+static ALLEGRO_BITMAP   *simon_background = NULL;
+static ALLEGRO_BITMAP   *top_light = NULL;
+static ALLEGRO_BITMAP   *right_light = NULL;
+static ALLEGRO_BITMAP   *bottom_light = NULL;
+static ALLEGRO_BITMAP   *left_light = NULL;
+static ALLEGRO_SAMPLE   *top_beep = NULL;
+static ALLEGRO_SAMPLE   *right_beep = NULL;
+static ALLEGRO_SAMPLE   *bottom_beep = NULL;
+static ALLEGRO_SAMPLE   *left_beep = NULL;
+static ALLEGRO_SAMPLE   *losing_music = NULL;
+static ALLEGRO_FONT     *font = NULL;
 static ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 static ALLEGRO_EVENT ev;
 
@@ -21,7 +25,10 @@ int inicializacion(void)
             fprintf(stderr, "Unable to start allegro\n");
             return -1;
     }
-    else if( !al_install_keyboard()) 
+    al_init_font_addon();       // initialize the font addon
+    al_init_ttf_addon();        // initialize the ttf (True Type Font) addon
+    
+    if( !al_install_keyboard()) 
     {
       fprintf(stderr, "failed to initialize the keyboard!\n");
       return -1;
@@ -130,6 +137,10 @@ int inicializacion(void)
         al_uninstall_audio();
         return -1;
     }
+    else if( !(losing_music = al_load_sample(LOSING_MUSIC_F )))
+    {
+        fprintf(stderr, "failed to load losing_music\n");
+    }
     else if( !(top_beep = al_load_sample("top_beep.wav" )))
     {
         fprintf(stderr, "failed to load top beep\n");
@@ -206,19 +217,34 @@ int inicializacion(void)
         al_destroy_sample(left_beep);
         return -1;
     }   
+
+    if(!al_init_native_dialog_addon()) 
+    {
+      fprintf(stderr, "failed to initialize the mouse!\n");
+      return -1;
+    }
+    if(!al_install_mouse()) 
+    {
+      fprintf(stderr, "failed to initialize the mouse!\n");
+      return -1;
+    }
     
+    font = al_load_ttf_font("SuperMario.ttf",36,0 ); //HAY CREAR UN FONT PARA CADA TAMAÑO DE LETRA :( 
+ 
+    if (!font)
+    {
+        fprintf(stderr, "Could not load 'SuperMario.ttf'\n");
+        return -1;
+    }
+    
+    al_register_event_source(event_queue, al_get_mouse_event_source());
     al_register_event_source(event_queue, al_get_keyboard_event_source());
+    al_register_event_source(event_queue, al_get_display_event_source(main_display));
+    
     al_draw_bitmap(simon_background, 0, 0, 0);
     al_flip_display();
         
-    if(!al_install_mouse()) {
-      fprintf(stderr, "failed to initialize the mouse!\n");
-      return -1;
-   }
-       al_register_event_source(event_queue, al_get_mouse_event_source());
-
-
-//    al_register_event_source(event_queue, al_get_mouse_event_source());
+    
 }
 
 void finalizacion (void)
@@ -249,21 +275,31 @@ int get_event (int source_of_event)
         al_wait_for_event(event_queue, &ev);
     }
     while 
-    (  ((source_of_event == SOURCE_MOUSE) && (ev.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP)) 
-    || ((source_of_event == SOURCE_KB) && (ev.type != ALLEGRO_EVENT_KEY_DOWN)) );
+    (  (((source_of_event == SOURCE_MOUSE) && (ev.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP)) 
+    || ((source_of_event == SOURCE_KB) && (ev.type != ALLEGRO_EVENT_KEY_DOWN))) 
+    && (ev.type != ALLEGRO_EVENT_DISPLAY_CLOSE) );
 
-    if (source_of_event == SOURCE_KB)
+    if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
     {
+        fprintf(stderr, "entro en display close\n");
+        event_code = EXIT_SIMON;
+    }
+    else if (source_of_event == SOURCE_KB)
+    {
+        fprintf(stderr, "entro en source_kb");
+        fprintf(stderr, "tomo como source al kb\n");
         /*  los codigos de allegro para las teclas izq, der, arriba y abajo
-         *  son entero sucesivos en ese mismo orden */
+         *  son entero sucesivos en ese mismo orden 
+         */
         if ( ev.keyboard.keycode >= ALLEGRO_KEY_LEFT  
           && ev.keyboard.keycode <= ALLEGRO_KEY_DOWN )
             
-        /* al restarle ALLEGRO_KEY_LEFT, los codigos quedan:
-         * tecla izq: 0
-         * tecla der: 1
-         * tecla arriba: 2
-         * tecla abajo: 3 */       
+        /*  al restarle ALLEGRO_KEY_LEFT, los codigos quedan:
+         *  tecla izq: 0
+         *  tecla der: 1
+         *  tecla arriba: 2
+         *  tecla abajo: 3 
+         */       
         {
             event_code = ev.keyboard.keycode - ALLEGRO_KEY_LEFT; 
         }
@@ -274,9 +310,10 @@ int get_event (int source_of_event)
     }
     else
     {
-//          (ev.type == ALLEGRO_MOUSE_EVENT)      FALTA HACER LA PARTE DEL MOUSE
+        fprintf(stderr, "entro en source_mouse");
+        fprintf(stderr,"x = %d, y = %d, dx = %d, dy = %d\n", ev.mouse.x, ev.mouse.y, ev.mouse.dx, ev.mouse.dy);
     }
-    
+    fprintf(stderr, "event_code = %d", event_code);
     return (event_code);
 }
 
@@ -356,19 +393,71 @@ int kb_or_mouse (void)
     while ( source_of_events == NO_SOURCE )
     {
         al_wait_for_event(event_queue, &ev);
-        
-            fprintf(stderr,"ev.type: %d\n", ev.type);
-        
+                
         if (ev.type == ALLEGRO_EVENT_KEY_UP)
         {
-            fprintf(stderr,"tomo el key up");
             source_of_events = SOURCE_KB;
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
         {
-            fprintf(stderr,"tomo el mouse button up");
             source_of_events = SOURCE_MOUSE;
         }
     }
     return source_of_events;
+}
+
+void new_highscore( int highscore )
+{
+    char hs_value[4];
+    sprintf( hs_value, "%d", highscore );
+    char hs_word[15];
+    strcpy( hs_word, "Your new highscore is ");
+    
+    char * hs_final = strcat( hs_word , hs_value );
+    
+    al_show_native_message_box(
+    main_display,
+    "New highscore",
+    "Congratulations!",
+    hs_final,
+    "close",
+    ALLEGRO_MESSAGEBOX_OKCANCEL
+    );
+}    
+    
+void show_highscore( int highscore )
+{    
+    char hs_value[4];
+    sprintf( hs_value, "%d", highscore );
+   
+    char hs_word[15];
+    strcpy( hs_word, "HIGHSCORE: ");
+    
+    char * hs_final = strcat( hs_word , hs_value );
+    
+    al_draw_text( font, al_map_rgb(255,255,255), SCREEN_W/4, (SCREEN_H/8), ALLEGRO_ALIGN_CENTER, hs_final );
+    al_flip_display();
+ }
+
+void wrong_sequence ( void )
+{
+    al_play_sample( losing_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
+    int i;
+    for ( i = LOSING_MUSIC_TIME/0.2 ; i > 0 ; i-- )
+    {
+        al_draw_bitmap(left_light, LEFT_X, LEFT_Y, 0);
+        al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y, 0);
+        al_draw_bitmap(top_light, TOP_X, TOP_Y, 0);
+        al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y, 0);
+        al_flip_display();
+        al_rest(0.1);
+        al_draw_bitmap(simon_background, 0, 0, 0);
+        al_flip_display();
+        al_rest(0.1);
+    }
+}
+
+void correct_sequence ( void )
+{
+    
 }

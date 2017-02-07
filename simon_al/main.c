@@ -8,10 +8,11 @@ void main (void)
 //POR AHORA, JUEVES A LA NOCHE, LO QUE NO AnDA ES LA FINALIZACION
 {
     inicializacion();
-    
-    
+    new_highscore(123);
     int key = LIGHTS_OFF;
-    turn_light_on(key);
+//    turn_light_on(key);
+//    wrong_sequence();
+//    show_highscore(123);
     int source_of_events = kb_or_mouse();
     while(key != EXIT_SIMON)
     {
