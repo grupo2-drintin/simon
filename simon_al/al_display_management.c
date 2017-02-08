@@ -1,5 +1,4 @@
 #include "al_display_management.h"
-
 //0043943829
 
 static ALLEGRO_DISPLAY  *main_display = NULL;
@@ -17,10 +16,10 @@ static ALLEGRO_SAMPLE   *wrong_sequence_music = NULL;
 static ALLEGRO_SAMPLE   *correct_sequence_music = NULL;
 static ALLEGRO_FONT     *font = NULL;
 static ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-static ALLEGRO_EVENT ev;            //ponerlo local a get event
 
-int highscore = 0;
-int score = 0;
+
+static int highscore = 0;
+static int score = 0;
 
 int inicializacion(int old_highscore)
 {
@@ -276,23 +275,23 @@ void finalizacion(void)
 
 int get_event(void)
 {
-    /* -1 escape, 0 a 3 botones del simon */
-    int event_code = LIGHTS_OFF;     
+    ALLEGRO_EVENT ev;   /* Contiene los eventos captados */
+    
+    /* event codes: -1 escape, 0 a 3 botones del simon */
+    int event_code = LIGHTS_OFF;            /* "Resetear" event_code para que no adopte el valor de un boton por casualidad */  
     int source_of_event = kb_or_mouse();    /* indicar si se debe leer del teclado o del mouse*/
+    
     while(  (event_code != EXIT_SIMON)      /* buscar eventos hasta que se aprete un boton del simon o se cierre el programa */
          && (event_code != LEFT)
          && (event_code != RIGHT)
          && (event_code != TOP)
          && (event_code != BOTTOM))
-    {
-        /*  Esperar eventos hasta que, si se esta usando el teclado, se levante una tecla 
-         *  o si se esta usando el mouse, se levante un boton del mouse */
-//mejorar comentario        
+    {    
         al_wait_for_event(event_queue, &ev);
    
         if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
-            event_code = EXIT_SIMON;    /* indicar que se cerro el display */
+            event_code = EXIT_SIMON;
         }
         else if ((source_of_event == SOURCE_KB) && (ev.type == ALLEGRO_EVENT_KEY_UP))
         {
@@ -312,7 +311,7 @@ int get_event(void)
             }
             else if(ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
             {
-                event_code = EXIT_SIMON;    /* indicar que se cerro el display */
+                event_code = EXIT_SIMON;
             }
         }
         else if ((source_of_event == SOURCE_MOUSE) && (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP))
@@ -320,27 +319,27 @@ int get_event(void)
 //            fprintf(stderr,"x = %d, y = %d, dx = %d, dy = %d\n", ev.mouse.x, ev.mouse.y, ev.mouse.dx, ev.mouse.dy);            
             if( ( ( LEFT_X <= ev.mouse.x ) && ( ev.mouse.x <= ( LEFT_X + BUTTON_W)) )
              && ( ( LEFT_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( LEFT_Y + BUTTON_W)) ))
-             /* Si se suelta el boton del mouse dentro del boton  izquierdo*/
+             /* Si se suelta el boton del mouse dentro del boton izquierdo del simon */
             {
-                event_code = LEFT;  /* Indicar que se apreto el boton izquierdo*/
+                event_code = LEFT;
             }
             else if( ( ( RIGHT_X <= ev.mouse.x ) && ( ev.mouse.x <= ( RIGHT_X + BUTTON_W)) )
                   && ( ( RIGHT_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( RIGHT_Y + BUTTON_W)) ))
-             /* Si se suelta el boton del mouse dentro del boton derecho */
+             /* Si se suelta el boton del mouse dentro del boton derecho del simon */
             {
-                event_code = RIGHT; /* Indicar que se apreto el boton derecho*/
+                event_code = RIGHT;
             }
             else if( ( ( TOP_X <= ev.mouse.x ) && ( ev.mouse.x <= ( TOP_X + BUTTON_W)) )
                   && ( ( TOP_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( TOP_Y + BUTTON_W)) ))
-             /* Si se suelta el boton del mouse dentro del boton de arriba */
+             /* Si se suelta el boton del mouse dentro del boton de arriba del simon */
             {
-                event_code = TOP;   /* Indicar que se apreto el boton de arriba*/
+                event_code = TOP;
             }
             else if( ( ( BOTTOM_X <= ev.mouse.x ) && ( ev.mouse.x <= ( BOTTOM_X + BUTTON_W)) )
                   && ( ( BOTTOM_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( BOTTOM_Y + BUTTON_W)) ))
-             /* Si se suelta el boton del mouse dentro del boton de abajo */
+             /* Si se suelta el boton del mouse dentro del boton de abajo del simon */
             {
-                event_code = BOTTOM;    /* Indicar que se apreto el boton de abajo*/
+                event_code = BOTTOM;
             }
         }
     }
@@ -383,12 +382,12 @@ void play_beep(int button)
 
 void turn_light_on (int button)
 {
-    draw_bg_and_hs();  /* al dibujar solo el fondo, se "apagan" todos los botones */
+    /* al dibujar solo el fondo, se "apagan" todos los botones */
+    draw_bg_and_hs();  
     
+    /* "encender" el boton presionado */ 
     switch (button)
-    /* "enciende" el boton presionado */ 
     {
-        //lleva corchetes el case??
         case LEFT:
             al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
             break;
@@ -406,14 +405,19 @@ void turn_light_on (int button)
         /* No es necesario hacer un case para LIGHTS_OFF, ya que en ese caso no se carga
          * ningun bitmap ademas del fondo */
     }
-    al_flip_display();  /* Pasar lo dibujado a la pantalla */
+    
+    /* Pasar lo dibujado a la pantalla */
+    al_flip_display();  
 }
 
 int kb_or_mouse (void)
-{
-    static int source_of_events = NO_SOURCE;
+{   //FALTA PONER EN DISPLAY EL CARTEL QUE LE DIGA AL USUARIO QUE TIENE QUE ELEGIR
     
-    while ( source_of_events == NO_SOURCE ) /* El usuario elige mouse o teclado, solo se entra una vez */
+    static int source_of_events = NO_SOURCE;
+    ALLEGRO_EVENT ev;   /* Contiene los eventos captados */
+    
+    /* Solo se entra en la primera invocacion ya que ahi se elige mouse o teclado*/
+    while ( source_of_events == NO_SOURCE ) 
     {
         al_wait_for_event(event_queue, &ev);
                 
@@ -430,17 +434,24 @@ int kb_or_mouse (void)
     return source_of_events;    
 }
 
-void new_highscore( int new_highscore )
+void new_highscore(int new_highscore)
 {
-    highscore = new_highscore;
+    //descabecear los tamanios de los buffers con defines
     
+    highscore = new_highscore;      /* actualizar el highscore */
+    /* Crear un arreglo de char con los ascii del highscore */
     char hs_value[4];
-//    sprintf( hs_value, "%d", highscore );    // buscar printff
-    char hs_word[27];
-    strcpy( hs_word, "Your new highscore is "); //usar strlcopy()
+    snprintf( hs_value, sizeof(hs_value), "%d", highscore );
     
-    char * hs_final = strcat( hs_word , hs_value );
+    /* Crear un arreglo de char con el mensaje */
+    char hs_word[250];
+    strncpy( hs_word, "Your new highscore is " , 250);
+        
+    /* Unir los dos arreglos, importante que el primer arreglo tenga suficiente 
+     * tamano como para contenter a los dos juntos */ 
+    char * hs_final = strncat( hs_word , hs_value , 250 - strlen(hs_word) );
     
+    /* Crear un pop up con el mensaje del nuevo highscore */
     al_show_native_message_box(
     NULL,
     "New highscore",
@@ -453,25 +464,36 @@ void new_highscore( int new_highscore )
     
 void draw_score_and_highscore()
 {    
+    /* Crear un arreglo de char con los ascii del highscore */
     char hs_value[4];
-    sprintf( hs_value, "%d", highscore );       //buscar con limitacion de buffer (printff() quizas)
-   
-    char hs_word[15];
-    strcpy( hs_word, "HIGHSCORE: ");
+    snprintf( hs_value, sizeof(hs_value), "%d", highscore );   
     
-    char * hs_final = strcat( hs_word , hs_value );     //usar strlcat
+    /* Crear un arreglo de char con los ascii de la palabra HIGHSCORE */
+    char hs_word[250];
+    strncpy( hs_word, "HIGHSCORE: ", 250);  
     
+    /* Unir los dos arreglos, importante que el primer arreglo tenga suficiente 
+     * tamano como para contenter a los dos juntos */ 
+    char * hs_final = strncat( hs_word, hs_value, 250 - strlen(hs_word) );  
+    
+    /* Dibujar el highscore */
     al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/8), ALLEGRO_ALIGN_LEFT, hs_final );
    
+/* Repetir el procedimiento para el score actual */
+    
     char s_value[4];
-    sprintf( s_value, "%d", highscore );       //buscar con limitacion de buffer (printff() quizas)
+    snprintf( s_value, sizeof(s_value), "%d", score );
    
     char s_word[19];
-    strcpy( s_word, "CURRENT SCORE: ");
+    strncpy( s_word, "CURRENT SCORE: ", 250);
     
-    char * s_final = strcat( s_word , s_value );     //usar strlcat
+    char * s_final = strncat( s_word, s_value, 250 - strlen(s_word) );
     
     al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/6), ALLEGRO_ALIGN_LEFT, s_final );
+
+/* NOTA: esta funcion no los pone en pantalla, 
+ * solo los carga para que aparezcan cuando se 
+ * invoque a al_flip_display() */
  }
 
 void wrong_sequence ( void )
@@ -479,6 +501,7 @@ void wrong_sequence ( void )
     al_play_sample( wrong_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
     int i;
     for ( i = WRONG_SEQUENCE_MUSIC_TIME/0.2 ; i > 0 ; i-- )
+    /* Prender y apagar todos los botones hasta que se termine la musica */
     {
         draw_bg_and_hs();
         al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
@@ -494,8 +517,6 @@ void wrong_sequence ( void )
     }
 }
 
-
-//QUE CUENTE EL SCORE PUTOS
 void correct_sequence ( void )
 {
     al_play_sample( correct_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
@@ -523,8 +544,12 @@ void correct_sequence ( void )
 
 void draw_bg_and_hs ()
 {
-    al_draw_bitmap(simon_background, 0, 0, 0);  /* al dibujar solo el fondo, se "apagan" todos los botones */
-    draw_score_and_highscore();
+    al_draw_bitmap(simon_background, 0, 0, 0);  /* dibujar el fondo */
+    draw_score_and_highscore();                 /* dibujar el highscore y el puntaje actual */
+
+/* NOTA: esta funcion no los pone en pantalla, 
+ * solo los carga para que aparezcan cuando se 
+ * invoque a al_flip_display() */
 }
 
 void update_score( int new_score )
