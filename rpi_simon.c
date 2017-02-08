@@ -4,6 +4,7 @@
 #include "backend_simon.h"
 #include "char_buffer.h"
 #include "fled.h"
+#include "audio.h"
 #include <pthread.h>
 
 
@@ -30,10 +31,8 @@
 #define BUFFER_INIT_SIZE 100
 
 
-
 static void * input_thread(); //Predeclaracion: thread de lectura
 
-static int keep_reading;     
 static char_buffer_t buffer;
 
 const char * led_array[] =       //numero de gpio que
@@ -59,7 +58,11 @@ int inicializacion(void)
         {
             printf("Error. Cannot initialize pins(switchs). Try again later\n");
             error = EXIT_SIMON;
+    
         }
+    init_sound(); // Init sound driver
+    
+    
     return error;
 }
 
@@ -191,3 +194,17 @@ static void * input_thread()
     }
 }
 
+
+void wrong_sequence(void)
+{
+    play_beep(GAMEOVER_SOUND);
+    turn_light_on(BLUE);
+    turn_light_on(RED);
+    turn_light_on(GREEN);
+    turn_light_on(YELLOW);
+    
+    sleep(2);
+    
+    end_play();
+    turn_light_on(LIGHTS_OFF);
+}

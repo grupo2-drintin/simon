@@ -17,6 +17,7 @@ void finalizacion (void);
 
 void turn_light_on (int);
 
+void wrong_sequence(void);
 
 
 #endif /* RPI_SIMON_H */
