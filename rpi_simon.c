@@ -33,6 +33,7 @@
 
 static void * input_thread(); //Predeclaracion: thread de lectura
 
+static int keep_reading;
 static char_buffer_t buffer;
 
 const char * led_array[] =       //numero de gpio que
@@ -195,15 +196,33 @@ static void * input_thread()
 }
 
 
+void correct_attempt(void)
+{
+    set_pin(LED_BLUE);       //prender todas las luces
+    usleep((int)(STANDARD_DELAY*0.5));
+    
+    turn_light_on(GREEN);
+    usleep((int)(STANDARD_DELAY*0.5));
+    
+    set_pin(LED_RED);
+    usleep((int)(STANDARD_DELAY*0.5));
+    
+    set_pin(LED_YELLOW);
+    usleep((int)(STANDARD_DELAY*0.5));
+    
+    turn_light_on(LIGHTS_OFF);    //apagar todas las luces
+    usleep(STANDARD_DELAY * 2);
+}
+
 void wrong_sequence(void)
 {
     play_beep(GAMEOVER_SOUND);
-    turn_light_on(BLUE);
-    turn_light_on(RED);
-    turn_light_on(GREEN);
-    turn_light_on(YELLOW);
+    set_pin(LED_BLUE);       //prender todas las luces
+    set_pin(LED_RED);
+    set_pin(LED_YELLOW);
+    set_pin(LED_GREEN);
     
-    sleep(2);
+    sleep(1);
     
     end_play();
     turn_light_on(LIGHTS_OFF);
