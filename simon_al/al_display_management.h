@@ -34,7 +34,7 @@ void finalizacion (void);
  *  3: flecha abajo
  * -1: tecla escape 
  */
-int get_event (int);
+int get_event (void);
 
 /* Funcion turn_light_on
  * 
@@ -81,7 +81,7 @@ void new_highscore(int);
  * necesario invocar a la funcion
  * al_flip_display(). )
  */
-void draw_highscore ();
+void draw_score_and_highscore ();
 
 /* Funcion wrong_sequence
  * 
@@ -102,6 +102,7 @@ void correct_sequence (void);
 
 void draw_bg_and_hs (void);  
 
+void update_score(int);
 
 
 #endif /* AL_DISPLAY_MANAGEMENT_H */

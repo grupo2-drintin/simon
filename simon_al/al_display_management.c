@@ -17,12 +17,15 @@ static ALLEGRO_SAMPLE   *wrong_sequence_music = NULL;
 static ALLEGRO_SAMPLE   *correct_sequence_music = NULL;
 static ALLEGRO_FONT     *font = NULL;
 static ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-static ALLEGRO_EVENT ev;
+static ALLEGRO_EVENT ev;            //ponerlo local a get event
+
 int highscore = 0;
+int score = 0;
 
 int inicializacion(int old_highscore)
 {
     highscore = old_highscore;
+    
     if(!al_init())
     {
             fprintf(stderr, "Unable to start allegro\n");
@@ -254,7 +257,7 @@ int inicializacion(int old_highscore)
     
 }
 
-void finalizacion (void)
+void finalizacion(void)
 {
     al_destroy_display(main_display);
     al_destroy_bitmap(simon_background);
@@ -263,45 +266,38 @@ void finalizacion (void)
     al_destroy_bitmap(top_light);
     al_destroy_bitmap(bottom_light);
     al_destroy_event_queue(event_queue);
-    al_uninstall_audio();
     al_uninstall_mouse();
     al_destroy_sample(right_beep);      //DA SEGMENTATION FAULT Y NO SE POR KE
     al_destroy_sample(left_beep);       //DA SEGMENTATION FAULT Y NO SE POR KE
     al_destroy_sample(top_beep);        //DA SEGMENTATION FAULT Y NO SE POR KE
     al_destroy_sample(bottom_beep);     //DA SEGMENTATION FAULT Y NO SE POR KE
+    al_uninstall_audio();
 }
 
-int get_event (int source_of_event)
+int get_event(void)
 {
-    int event_code;     /* -1 escape, 0 a 3 botones del simon */
-    event_code = LIGHTS_OFF;
-    
-    while(  (event_code!=EXIT_SIMON) 
-         && (event_code!=LEFT)
-         && (event_code!=RIGHT)
-         && (event_code!=TOP)
-         && (event_code!=BOTTOM))
+    /* -1 escape, 0 a 3 botones del simon */
+    int event_code = LIGHTS_OFF;     
+    int source_of_event = kb_or_mouse();    /* indicar si se debe leer del teclado o del mouse*/
+    while(  (event_code != EXIT_SIMON)      /* buscar eventos hasta que se aprete un boton del simon o se cierre el programa */
+         && (event_code != LEFT)
+         && (event_code != RIGHT)
+         && (event_code != TOP)
+         && (event_code != BOTTOM))
     {
         /*  Esperar eventos hasta que, si se esta usando el teclado, se levante una tecla 
          *  o si se esta usando el mouse, se levante un boton del mouse */
-        do
-        {
-            al_wait_for_event(event_queue, &ev);
-        }
-        while 
-        (  (((source_of_event == SOURCE_MOUSE) && (ev.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP)) 
-        || ((source_of_event == SOURCE_KB) && (ev.type != ALLEGRO_EVENT_KEY_DOWN))) 
-        && (ev.type != ALLEGRO_EVENT_DISPLAY_CLOSE) );
-
+//mejorar comentario        
+        al_wait_for_event(event_queue, &ev);
+   
         if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
         {
-            event_code = EXIT_SIMON;
+            event_code = EXIT_SIMON;    /* indicar que se cerro el display */
         }
-        else if (source_of_event == SOURCE_KB)
+        else if ((source_of_event == SOURCE_KB) && (ev.type == ALLEGRO_EVENT_KEY_UP))
         {
             /*  los codigos de allegro para las teclas izq, der, arriba y abajo
-             *  son entero sucesivos en ese mismo orden 
-             */
+             *  son entero sucesivos en ese mismo orden */
             if ( ev.keyboard.keycode >= ALLEGRO_KEY_LEFT  
               && ev.keyboard.keycode <= ALLEGRO_KEY_DOWN )
 
@@ -316,38 +312,42 @@ int get_event (int source_of_event)
             }
             else if(ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
             {
-                event_code = EXIT_SIMON;
+                event_code = EXIT_SIMON;    /* indicar que se cerro el display */
             }
         }
-        else
+        else if ((source_of_event == SOURCE_MOUSE) && (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP))
         {
-            fprintf(stderr,"x = %d, y = %d, dx = %d, dy = %d\n", ev.mouse.x, ev.mouse.y, ev.mouse.dx, ev.mouse.dy);
+//            fprintf(stderr,"x = %d, y = %d, dx = %d, dy = %d\n", ev.mouse.x, ev.mouse.y, ev.mouse.dx, ev.mouse.dy);            
             if( ( ( LEFT_X <= ev.mouse.x ) && ( ev.mouse.x <= ( LEFT_X + BUTTON_W)) )
              && ( ( LEFT_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( LEFT_Y + BUTTON_W)) ))
+             /* Si se suelta el boton del mouse dentro del boton  izquierdo*/
             {
-                event_code = LEFT;
+                event_code = LEFT;  /* Indicar que se apreto el boton izquierdo*/
             }
-            if( ( ( RIGHT_X <= ev.mouse.x ) && ( ev.mouse.x <= ( RIGHT_X + BUTTON_W)) )
-             && ( ( RIGHT_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( RIGHT_Y + BUTTON_W)) ))
+            else if( ( ( RIGHT_X <= ev.mouse.x ) && ( ev.mouse.x <= ( RIGHT_X + BUTTON_W)) )
+                  && ( ( RIGHT_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( RIGHT_Y + BUTTON_W)) ))
+             /* Si se suelta el boton del mouse dentro del boton derecho */
             {
-                event_code = RIGHT;
+                event_code = RIGHT; /* Indicar que se apreto el boton derecho*/
             }
-            if( ( ( TOP_X <= ev.mouse.x ) && ( ev.mouse.x <= ( TOP_X + BUTTON_W)) )
-             && ( ( TOP_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( TOP_Y + BUTTON_W)) ))
+            else if( ( ( TOP_X <= ev.mouse.x ) && ( ev.mouse.x <= ( TOP_X + BUTTON_W)) )
+                  && ( ( TOP_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( TOP_Y + BUTTON_W)) ))
+             /* Si se suelta el boton del mouse dentro del boton de arriba */
             {
-                event_code = TOP;
+                event_code = TOP;   /* Indicar que se apreto el boton de arriba*/
             }
-            if( ( ( BOTTOM_X <= ev.mouse.x ) && ( ev.mouse.x <= ( BOTTOM_X + BUTTON_W)) )
-             && ( ( BOTTOM_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( BOTTOM_Y + BUTTON_W)) ))
+            else if( ( ( BOTTOM_X <= ev.mouse.x ) && ( ev.mouse.x <= ( BOTTOM_X + BUTTON_W)) )
+                  && ( ( BOTTOM_Y <= ev.mouse.y ) && ( ev.mouse.y <= ( BOTTOM_Y + BUTTON_W)) ))
+             /* Si se suelta el boton del mouse dentro del boton de abajo */
             {
-                event_code = BOTTOM;
+                event_code = BOTTOM;    /* Indicar que se apreto el boton de abajo*/
             }
         }
     }
     return (event_code);
 }
 
-void play_beep (int button)
+void play_beep(int button)
 {
     al_stop_samples();  /* si esta sonando algun tono, deja de sonar */
     
@@ -383,44 +383,37 @@ void play_beep (int button)
 
 void turn_light_on (int button)
 {
-        draw_bg_and_hs();  /* al dibujar solo el fondo, se "apagan" todos los botones */
+    draw_bg_and_hs();  /* al dibujar solo el fondo, se "apagan" todos los botones */
     
     switch (button)
     /* "enciende" el boton presionado */ 
     {
+        //lleva corchetes el case??
         case LEFT:
-        {
             al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
             break;
-        }
         case RIGHT:
-        {
             al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y - SPRITE_H, 0);
             break;
-        }
         case TOP:
-        {
             al_draw_bitmap(top_light, TOP_X, TOP_Y - SPRITE_H, 0);
             break;
-        }
         case BOTTOM:
-        {
             al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y - SPRITE_H, 0);
             break;
-        }
         default:
             break;
         /* No es necesario hacer un case para LIGHTS_OFF, ya que en ese caso no se carga
          * ningun bitmap ademas del fondo */
     }
-    al_flip_display();
+    al_flip_display();  /* Pasar lo dibujado a la pantalla */
 }
 
 int kb_or_mouse (void)
 {
-    int source_of_events = NO_SOURCE;
+    static int source_of_events = NO_SOURCE;
     
-    while ( source_of_events == NO_SOURCE )
+    while ( source_of_events == NO_SOURCE ) /* El usuario elige mouse o teclado, solo se entra una vez */
     {
         al_wait_for_event(event_queue, &ev);
                 
@@ -433,7 +426,8 @@ int kb_or_mouse (void)
             source_of_events = SOURCE_MOUSE;
         }
     }
-    return source_of_events;
+    /* Una vez que el usuario elige mouse o teclado, siempre se devuelve el codigo correspondiente a su eleccion */
+    return source_of_events;    
 }
 
 void new_highscore( int new_highscore )
@@ -441,9 +435,9 @@ void new_highscore( int new_highscore )
     highscore = new_highscore;
     
     char hs_value[4];
-    sprintf( hs_value, "%d", highscore );
+//    sprintf( hs_value, "%d", highscore );    // buscar printff
     char hs_word[27];
-    strcpy( hs_word, "Your new highscore is ");
+    strcpy( hs_word, "Your new highscore is "); //usar strlcopy()
     
     char * hs_final = strcat( hs_word , hs_value );
     
@@ -457,17 +451,27 @@ void new_highscore( int new_highscore )
     );
 }    
     
-void draw_highscore()
+void draw_score_and_highscore()
 {    
     char hs_value[4];
-    sprintf( hs_value, "%d", highscore );
+    sprintf( hs_value, "%d", highscore );       //buscar con limitacion de buffer (printff() quizas)
    
     char hs_word[15];
     strcpy( hs_word, "HIGHSCORE: ");
     
-    char * hs_final = strcat( hs_word , hs_value );
+    char * hs_final = strcat( hs_word , hs_value );     //usar strlcat
     
-    al_draw_text( font, al_map_rgb(255,255,255), SCREEN_W/4, (SCREEN_H/8), ALLEGRO_ALIGN_LEFT, hs_final );
+    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/8), ALLEGRO_ALIGN_LEFT, hs_final );
+   
+    char s_value[4];
+    sprintf( s_value, "%d", highscore );       //buscar con limitacion de buffer (printff() quizas)
+   
+    char s_word[19];
+    strcpy( s_word, "CURRENT SCORE: ");
+    
+    char * s_final = strcat( s_word , s_value );     //usar strlcat
+    
+    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/6), ALLEGRO_ALIGN_LEFT, s_final );
  }
 
 void wrong_sequence ( void )
@@ -476,12 +480,14 @@ void wrong_sequence ( void )
     int i;
     for ( i = WRONG_SEQUENCE_MUSIC_TIME/0.2 ; i > 0 ; i-- )
     {
-        al_draw_bitmap(left_light, LEFT_X, LEFT_Y, 0);
-        al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y, 0);
-        al_draw_bitmap(top_light, TOP_X, TOP_Y, 0);
-        al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y, 0);
+        draw_bg_and_hs();
+        al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
+        al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y - SPRITE_H, 0);
+        al_draw_bitmap(top_light, TOP_X, TOP_Y - SPRITE_H, 0);
+        al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y - SPRITE_H, 0);
         al_flip_display();
         al_rest(0.1);
+        
         draw_bg_and_hs();  
         al_flip_display();
         al_rest(0.1);
@@ -495,16 +501,16 @@ void correct_sequence ( void )
     al_play_sample( correct_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
     
     draw_bg_and_hs();  
-    al_draw_bitmap(left_light, LEFT_X, LEFT_Y, 0);
+    al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
-    al_draw_bitmap(top_light, TOP_X, TOP_Y, 0);
+    al_draw_bitmap(top_light, TOP_X, TOP_Y - SPRITE_H, 0);
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
-    al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y, 0);
+    al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y - SPRITE_H, 0);
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
-    al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y, 0);
+    al_draw_bitmap(bottom_light, BOTTOM_X, BOTTOM_Y - SPRITE_H, 0);
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
     
@@ -518,7 +524,10 @@ void correct_sequence ( void )
 void draw_bg_and_hs ()
 {
     al_draw_bitmap(simon_background, 0, 0, 0);  /* al dibujar solo el fondo, se "apagan" todos los botones */
-    draw_highscore();
+    draw_score_and_highscore();
 }
 
-
+void update_score( int new_score )
+{
+    score = new_score;
+}

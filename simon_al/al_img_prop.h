@@ -33,6 +33,7 @@
 #define LEFT_BEEP_F     "left_beep.wav"
 #define WRONG_SEQUENCE_MUSIC_F  "mario_dies.wav"
 #define WRONG_SEQUENCE_MUSIC_TIME 3.0               //duracion de wrong sequence music
+//aclarar que debe ser mayor a 0.2 porque sino wrong sequence no corre
 #define CORRECT_SEQUENCE_MUSIC_F "coin.wav"
 #define CORRECT_SEQUENCE_MUSIC_TIME 0.5             //duracion de correct sequence music
 
