@@ -17,6 +17,8 @@ void finalizacion (void);
 
 void turn_light_on (int);
 
+void correct_attempt(void)
+
 void wrong_sequence(void);
 
 
