@@ -5,17 +5,18 @@
 #include "allegro5/allegro_image.h"
 #include "allegro5/allegro_audio.h"
 #include "allegro5/allegro_acodec.h"
-#include "allegro5/allegro_font.h" //manejo de fonts
-#include "allegro5/allegro_ttf.h" //Manejo de ttfs
-#include "allegro5/allegro_native_dialog.h" //Manejo de ttfs
+#include "allegro5/allegro_font.h" 
+#include "allegro5/allegro_ttf.h" 
+#include "allegro5/allegro_native_dialog.h"
 #include "al_img_prop.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #define EXIT_SIMON  -1
 
-enum src_of_event { NO_SOURCE, SOURCE_MOUSE, SOURCE_KB }; //source of event, de donde tomar input
+enum src_of_event { NO_SOURCE, SOURCE_MOUSE, SOURCE_KB }; 
 
 int al_inicializacion (int);
 
@@ -57,49 +58,48 @@ void al_turn_light_on (int);
  */
 void al_play_beep (int);
 
-/*
+
+/* Funcion kb_or_mouse 
  * 
+ * En su primera invocacion, muestra un mensaje en pantalla indicando al usuario
+ * que si desea jugar con el teclado, aprete cualquier tecla, y en caso contrario, 
+ * para jugar con el mouse, que aprete cualquier boton 
+ * 
+ * DEVUELVE: el codigo correspondiente a la eleccion del usuario (int):
+ *  1: mouse
+ *  2: teclado
+ * 
+ * En las invocaciones siguientes se saltea el mensaje de eleccion. Se devuelve 
+ * el codigo correspondiente al metodo de input seleccionado en la primera 
+ * invocacion
  */
-int al_b_or_mouse (void);
+int al_kb_or_mouse (void);
 
 /* Funcion new_highscore
  * 
  * RECIBE: int con el nuevo highscore
- * Abre un pop up indicando que se ha llegado
- * a un nuevo highscore y cual es el valor 
- * del mismo
+ * 
+ * Abre un pop up indicando que se ha llegado a un nuevo highscore y cual es el 
+ * valor del mismo.
+ * Reproduce musica mientras que el pop up este abierto
  */
 void al_new_highscore(int);
 
-/* Funcion show_highscore
- * 
- * Carga en el display principal
- * cual es el highscore actual
- * (no lo muestra, solamente lo 
- * carga. Para mostrarlo, es 
- * necesario invocar a la funcion
- * al_flip_display(). )
- */
-void draw_score_and_highscore ();
-
 /* Funcion wrong_sequence
  * 
- * Lleva a cabo la animacion y 
- * reproduce el sonido correspondientes
- * a una secuencia incorrecta 
- * sincronizadamente
+ * Lleva a cabo la animacion y reproduce el sonido correspondientes al momento 
+ * en el que el usuario ingresa una secuencia incorrecta
  */
 void al_wrong_attempt (void);
 
 /* Funcion correct_sequence
  * 
- * Lleva a cabo la animacion y 
- * reproduce el sonido correspondientes
- * a una secuencia correcta sincronizadamente
+ * Lleva a cabo la animacion y reproduce el sonido correspondientes al momento 
+ * en el que el usuario ingresa una secuencia correcta
  */
 void al_correct_attempt (void);
 
-void draw_bg_and_hs (void);  
+
 
 void al_update_score(int);
 
