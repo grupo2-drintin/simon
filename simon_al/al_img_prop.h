@@ -3,12 +3,15 @@
 
 #define SCREEN_H        780             //ancho del fondo
 #define SCREEN_W        637             //altura del fondo
+#define SCREEN_MARGIN   10              //margen de la pantalla
 #define SIMON_CENTER_X  318     //eje de simetria de los botones del simon en eje x
 #define SIMON_CENTER_Y  443     //eje de simetria de los botones del simon en eje y
 
 #define BUTTON_W        165             //ancho de loS botones
 #define BUTTON_D        127             //distancia de los botones desde el centro de simetria
 #define SPRITE_H        154             //altura de los sprites de hongos
+
+#define FONT_SIZE       20
 
 #define BACKGROUND_F    "mario_background.png"
 #define TOP_SPRITE_F    "blue_mush.png"

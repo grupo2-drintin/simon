@@ -238,7 +238,7 @@ int inicializacion(int old_highscore)
       return -1;
     }
     
-    font = al_load_ttf_font("SuperMario.ttf",36,0 ); //HAY CREAR UN FONT PARA CADA TAMAÑO DE LETRA :( 
+    font = al_load_ttf_font("SuperMario.ttf", 20,0 ); //HAY CREAR UN FONT PARA CADA TAMAÑO DE LETRA :( 
  
     if (!font)
     {
@@ -419,15 +419,28 @@ int kb_or_mouse (void)
     /* Solo se entra en la primera invocacion ya que ahi se elige mouse o teclado*/
     while ( source_of_events == NO_SOURCE ) 
     {
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*0), ALLEGRO_ALIGN_LEFT, " To play with the keyboard" );
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*1), ALLEGRO_ALIGN_LEFT, "press any key" );
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*2), ALLEGRO_ALIGN_LEFT, " To play with the mouse" );
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*3), ALLEGRO_ALIGN_LEFT, "click it" );
+        al_flip_display();
+        
         al_wait_for_event(event_queue, &ev);
                 
         if (ev.type == ALLEGRO_EVENT_KEY_UP)
         {
+            
             source_of_events = SOURCE_KB;
+            draw_bg_and_hs();
+            al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE), ALLEGRO_ALIGN_LEFT, "Keyboard selected" );
+            al_flip_display();
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
         {
             source_of_events = SOURCE_MOUSE;
+            draw_bg_and_hs();
+            al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE), ALLEGRO_ALIGN_LEFT, "mouse selected" );
+            al_flip_display();
         }
     }
     /* Una vez que el usuario elige mouse o teclado, siempre se devuelve el codigo correspondiente a su eleccion */
@@ -452,7 +465,7 @@ void new_highscore(int new_highscore)
     char * hs_final = strncat( hs_word , hs_value , 250 - strlen(hs_word) );
     
     /* Crear un pop up con el mensaje del nuevo highscore */
-    al_show_native_message_box(
+    int event = al_show_native_message_box(
     NULL,
     "New highscore",
     "Congratulations!",
@@ -460,6 +473,7 @@ void new_highscore(int new_highscore)
     "close",
     ALLEGRO_MESSAGEBOX_OK_CANCEL
     );
+    fprintf(stderr, "event = %d\n", event);
 }    
     
 void draw_score_and_highscore()
@@ -477,7 +491,7 @@ void draw_score_and_highscore()
     char * hs_final = strncat( hs_word, hs_value, 250 - strlen(hs_word) );  
     
     /* Dibujar el highscore */
-    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/8), ALLEGRO_ALIGN_LEFT, hs_final );
+    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE), ALLEGRO_ALIGN_LEFT, hs_final );
    
 /* Repetir el procedimiento para el score actual */
     
@@ -489,7 +503,7 @@ void draw_score_and_highscore()
     
     char * s_final = strncat( s_word, s_value, 250 - strlen(s_word) );
     
-    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/6), ALLEGRO_ALIGN_LEFT, s_final );
+    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_MARGIN), (SCREEN_MARGIN), ALLEGRO_ALIGN_LEFT, s_final );
 
 /* NOTA: esta funcion no los pone en pantalla, 
  * solo los carga para que aparezcan cuando se 
@@ -535,8 +549,9 @@ void correct_sequence ( void )
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
     
-    /* Poner en display el fondo por medio segundo para 
-       que sea claro cuando cominenza la nueva secuencia */
+    /* Poner en display solo el fondo por medio segundo 
+     * para que sea claro cuando cominenza la nueva 
+     * secuencia */
     draw_bg_and_hs();  
     al_flip_display();
     al_rest(0.5);
