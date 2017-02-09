@@ -28,31 +28,6 @@
 #define S_GAMEOVER  1
 #endif //STATUS FLAGS: indican si el juego termino o no, o si hubo error
 
-
-enum simon_colors {YELLOW, GREEN, BLUE, RED, LIGHTS_OFF};
-//colores de las luces, e indicacion de que hay que apagarlas
-
-#define IO_ALLEGRO  0
-#define IO_RPI      1
-
-#define IO          IO_ALLEGRO  //switch de compilacion: sistema de i/o
-
-
-#define STANDARD_DELAY 250000
-// tiempo que queda prendida cada luz durante el turno del jugador 
-
-#define INITIAL_DELAY  1000000
-#define DELAY_FRACTION 0.9
-/* INITIAL_DELAY determinara cuanto tiempo quedara encendida la luz cuando co-
- * mience la secuencia, en microsegundos. antes de mostrar la secuencia otra vez,
- * este numero se ira multiplicando cada vez por DELAY_FRACTION, que debe ser
- * un numero mayor que 0 y menor que 1 para que la misma se muestre cada vez 
- * mas rapido. */
-
-
-
-
-
 int simon_game (void);
 /*  Ejecuta la totalidad del juego simon.
  *  Puede utilizar como sistema de input/output allegro o rpi (para cambiar se
