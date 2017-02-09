@@ -16,7 +16,6 @@
 
 #define EXIT_SIMON  -1
 
-enum lights { LEFT, RIGHT, TOP, BOTTOM, LIGHTS_OFF }; 
 enum src_of_event { NO_SOURCE, SOURCE_MOUSE, SOURCE_KB }; 
 
 int inicializacion (int);
