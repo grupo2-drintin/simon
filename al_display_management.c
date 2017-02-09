@@ -1,6 +1,5 @@
 #include "al_display_management.h"
 //0043943829
-enum lights { LEFT, RIGHT, TOP, BOTTOM, LIGHTS_OFF }; //quedaria en otro archivo asi lo pueden usar todos los modulos
 
 static ALLEGRO_DISPLAY  *main_display = NULL;
 static ALLEGRO_TIMER    *fps_timer = NULL;
@@ -15,6 +14,7 @@ static ALLEGRO_SAMPLE   *bottom_beep = NULL;
 static ALLEGRO_SAMPLE   *left_beep = NULL;
 static ALLEGRO_SAMPLE   *wrong_sequence_music = NULL;
 static ALLEGRO_SAMPLE   *correct_sequence_music = NULL;
+static ALLEGRO_SAMPLE   *highscore_music = NULL;
 static ALLEGRO_FONT     *font = NULL;
 static ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 
@@ -28,84 +28,82 @@ int inicializacion(int old_highscore)
     
     if(!al_init())
     {
-            fprintf(stderr, "Unable to start allegro\n");
-            return -1;
+        fprintf(stderr, "Unable to start allegro\n");
+        return -1;
     }
-    al_init_font_addon();       // initialize the font addon
-    al_init_ttf_addon();        // initialize the ttf (True Type Font) addon
-    
     if( !al_install_keyboard()) 
     {
-      fprintf(stderr, "failed to initialize the keyboard!\n");
-      return -1;
+        fprintf(stderr, "Unable to initialize the keyboard!\n");
+        al_uninstall_system();
+        return -1;
     }
+    
     else if( !al_init_image_addon())
     {
-            fprintf(stderr,"Unable to start image addon \n"); //Igual que printf pero imprime al error std 
-            al_uninstall_system();
-            return -1;
+        fprintf(stderr,"Unable to start image addon \n"); 
+        al_uninstall_system();
+        return -1;
     }
     else if( !(main_display = al_create_display(SCREEN_W, SCREEN_H)) )
     {
             fprintf(stderr,"Unable to create display\n"); 
-            al_uninstall_system();
             al_shutdown_image_addon();
+            al_uninstall_system();
             return -1;
     }
     else if( !(simon_background = al_load_bitmap(BACKGROUND_F)) )
     {
         fprintf(stderr,"Unable to load background\n"); 
-        al_uninstall_system();
         al_shutdown_image_addon();
         al_destroy_display(main_display);
+        al_uninstall_system();
         return -1;
     }
     else if( !(top_light = al_load_bitmap(TOP_SPRITE_F)) )
     {
         fprintf(stderr,"Unable to load top sprite\n"); 
-        al_uninstall_system();
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
+        al_uninstall_system();
         return -1;
     }   
     else if( !(right_light = al_load_bitmap(RIGHT_SPRITE_F)) )
     {
         fprintf(stderr,"Unable to load right sprite\n"); 
-        al_uninstall_system();
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
         al_destroy_bitmap(top_light);
+        al_uninstall_system();
         return -1;
     }
     else if( !(bottom_light = al_load_bitmap(BOTTOM_SPRITE_F)) )
     {
         fprintf(stderr,"Unable to load bottom sprite\n"); 
-        al_uninstall_system();
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
         al_destroy_bitmap(top_light);
         al_destroy_bitmap(right_light);
+        al_uninstall_system();
         return -1;
     }   
     else if( !(left_light = al_load_bitmap(LEFT_SPRITE_F)) )
     {
         fprintf(stderr,"Unable to load left sprite\n"); 
-        al_uninstall_system();
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
         al_destroy_bitmap(top_light);
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
+        al_uninstall_system();
         return -1;
     }   
     else if(!al_install_audio())
     {
-        fprintf(stderr, "failed to initialize audio\n");
-        al_uninstall_system();
+        fprintf(stderr, "Unable to initialize audio\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -113,12 +111,12 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
+        al_uninstall_system();
         return -1;
     }   
     else if(!al_init_acodec_addon())
     {
-        fprintf(stderr, "failed to initialize audio codecs\n");
-        al_uninstall_system();
+        fprintf(stderr, "Unable to initialize audio codecs\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -127,12 +125,12 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
         al_uninstall_audio();
+        al_uninstall_system();
         return -1;
     }
     else if ( !al_reserve_samples(1) )
     {
-        fprintf(stderr, "failed to reserve samples\n");
-        al_uninstall_system();
+        fprintf(stderr, "Unable to reserve sample\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -141,20 +139,26 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
         al_uninstall_audio();
+        al_uninstall_system();
         return -1;
     }
     else if( !(wrong_sequence_music = al_load_sample(WRONG_SEQUENCE_MUSIC_F )))
     {
-        fprintf(stderr, "failed to load wrong sequence music\n");
+        fprintf(stderr, "Unable to load wrong sequence music\n");
+        al_shutdown_image_addon();
+        al_destroy_display(main_display);
+        al_destroy_bitmap(simon_background);
+        al_destroy_bitmap(top_light);
+        al_destroy_bitmap(right_light);
+        al_destroy_bitmap(bottom_light);
+        al_destroy_bitmap(left_light);
+        al_uninstall_audio();
+        al_uninstall_system();
+        return -1;
     }
     else if( !(correct_sequence_music = al_load_sample(CORRECT_SEQUENCE_MUSIC_F )))
     {
-        fprintf(stderr, "failed to load correct_sequence_music\n");
-    }
-    else if( !(top_beep = al_load_sample("top_beep.wav" )))
-    {
-        fprintf(stderr, "failed to load top beep\n");
-        al_uninstall_system();
+        fprintf(stderr, "Unable to load correct sequence music\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -162,12 +166,14 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
         al_uninstall_audio();
-    }
-    else if( !(right_beep = al_load_sample("right_beep.wav" )))
-    {
-        fprintf(stderr, "failed to load right beep\n");
         al_uninstall_system();
+        return -1;
+    }
+    else if( !(top_beep = al_load_sample(TOP_BEEP_F )))
+    {
+        fprintf(stderr, "Unable to load top beep sample\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -175,13 +181,32 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
         al_uninstall_audio();
+        al_uninstall_system();
+        return -1;
+    }
+    else if( !(right_beep = al_load_sample(RIGHT_BEEP_F )))
+    {
+        fprintf(stderr, "Unable to load right beep sample\n");
+        al_shutdown_image_addon();
+        al_destroy_display(main_display);
+        al_destroy_bitmap(simon_background);
+        al_destroy_bitmap(top_light);
+        al_destroy_bitmap(right_light);
+        al_destroy_bitmap(bottom_light);
+        al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
         al_destroy_sample(top_beep);
-    }
-    else if( !(bottom_beep = al_load_sample("bottom_beep.wav" )))
-    {
-        fprintf(stderr, "failed to load bottom beep\n");
+        al_uninstall_audio();
         al_uninstall_system();
+        return -1;
+    }
+    else if( !(bottom_beep = al_load_sample(BOTTOM_BEEP_F )))
+    {
+        fprintf(stderr, "Unable to load bottom beep\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -189,14 +214,17 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
-        al_uninstall_audio();
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
         al_destroy_sample(top_beep);
         al_destroy_sample(right_beep);
-    }
-    else if( !(left_beep = al_load_sample("left_beep.wav" )))
-    {
-        fprintf(stderr, "failed to load left beep\n");
+        al_uninstall_audio();
         al_uninstall_system();
+        return -1;
+    }
+    else if( !(left_beep = al_load_sample(LEFT_BEEP_F) ) )
+    {
+        fprintf(stderr, "Unable to load left beep\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -204,15 +232,18 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
-        al_uninstall_audio();
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
         al_destroy_sample(top_beep);
         al_destroy_sample(right_beep);
         al_destroy_sample(bottom_beep);
-    }
-    else if( !(event_queue = al_create_event_queue()))
-    {
-        fprintf(stderr, "failed to create event queue\n");
+        al_uninstall_audio();
         al_uninstall_system();
+        return -1;
+    }
+    else if( !(highscore_music = al_load_sample(HIGHSCORE_MUSIC_F) ) )
+    {
+        fprintf(stderr, "Unable to load highscore music\n");
         al_shutdown_image_addon();
         al_destroy_display(main_display);
         al_destroy_bitmap(simon_background);
@@ -220,30 +251,106 @@ int inicializacion(int old_highscore)
         al_destroy_bitmap(right_light);
         al_destroy_bitmap(bottom_light);
         al_destroy_bitmap(left_light);
-        al_uninstall_audio();
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
         al_destroy_sample(top_beep);
         al_destroy_sample(right_beep);
         al_destroy_sample(bottom_beep);
         al_destroy_sample(left_beep);
+        al_uninstall_audio();
+        al_uninstall_system();
+        return -1;
+    }
+    else if( !(event_queue = al_create_event_queue()))
+    {
+        fprintf(stderr, "Unable to create event queue\n");
+        al_shutdown_image_addon();
+        al_destroy_display(main_display);
+        al_destroy_bitmap(simon_background);
+        al_destroy_bitmap(top_light);
+        al_destroy_bitmap(right_light);
+        al_destroy_bitmap(bottom_light);
+        al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
+        al_destroy_sample(top_beep);
+        al_destroy_sample(right_beep);
+        al_destroy_sample(bottom_beep);
+        al_destroy_sample(left_beep);
+        al_destroy_sample(highscore_music);
+        al_uninstall_audio();
+        al_uninstall_system();
         return -1;
     }   
 
     if(!al_init_native_dialog_addon()) 
     {
-      fprintf(stderr, "failed to initialize the mouse!\n");
-      return -1;
+        fprintf(stderr, "Unable to initialize the native dialog addon\n");
+        al_shutdown_image_addon();
+        al_destroy_display(main_display);
+        al_destroy_bitmap(simon_background);
+        al_destroy_bitmap(top_light);
+        al_destroy_bitmap(right_light);
+        al_destroy_bitmap(bottom_light);
+        al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
+        al_destroy_sample(top_beep);
+        al_destroy_sample(right_beep);
+        al_destroy_sample(bottom_beep);
+        al_destroy_sample(left_beep);
+        al_destroy_event_queue(event_queue);
+        al_destroy_sample(highscore_music);
+        al_uninstall_audio();
+        al_uninstall_system();
+        return -1;
     }
     if(!al_install_mouse()) 
     {
-      fprintf(stderr, "failed to initialize the mouse!\n");
-      return -1;
+        fprintf(stderr, "Unable to initialize the mouse\n");
+        al_shutdown_image_addon();
+        al_destroy_display(main_display);
+        al_destroy_bitmap(simon_background);
+        al_destroy_bitmap(top_light);
+        al_destroy_bitmap(right_light);
+        al_destroy_bitmap(bottom_light);
+        al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
+        al_destroy_sample(top_beep);
+        al_destroy_sample(right_beep);
+        al_destroy_sample(bottom_beep);
+        al_destroy_sample(left_beep);
+        al_destroy_sample(highscore_music);
+        al_destroy_event_queue(event_queue);
+        al_uninstall_audio();
+        al_uninstall_system();
+        return -1;
     }
+
+    al_init_font_addon();
+    al_init_ttf_addon();
     
-    font = al_load_ttf_font("SuperMario.ttf",36,0 ); //HAY CREAR UN FONT PARA CADA TAMAÑO DE LETRA :( 
- 
-    if (!font)
+    if ( !( font = al_load_ttf_font(FONT_TTF_F, 20,0) ) )
     {
-        fprintf(stderr, "Could not load 'SuperMario.ttf'\n");
+        fprintf(stderr, "Unable to load font\n");
+        al_shutdown_image_addon();
+        al_destroy_display(main_display);
+        al_destroy_bitmap(simon_background);
+        al_destroy_bitmap(top_light);
+        al_destroy_bitmap(right_light);
+        al_destroy_bitmap(bottom_light);
+        al_destroy_bitmap(left_light);
+        al_destroy_sample(wrong_sequence_music);
+        al_destroy_sample(correct_sequence_music);
+        al_destroy_sample(top_beep);
+        al_destroy_sample(right_beep);
+        al_destroy_sample(bottom_beep);
+        al_destroy_sample(left_beep);
+        al_destroy_sample(highscore_music);
+        al_destroy_event_queue(event_queue);
+        al_uninstall_audio();
+        al_uninstall_system();
         return -1;
     }
     
@@ -251,27 +358,28 @@ int inicializacion(int old_highscore)
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_display_event_source(main_display));
     
-    al_draw_bitmap(simon_background, 0, 0, 0);
-    al_flip_display();
-        
-    
+    return 0;
 }
 
 void finalizacion(void)
 {
+    al_shutdown_image_addon();
     al_destroy_display(main_display);
     al_destroy_bitmap(simon_background);
-    al_destroy_bitmap(left_light);
-    al_destroy_bitmap(right_light);
     al_destroy_bitmap(top_light);
+    al_destroy_bitmap(right_light);
     al_destroy_bitmap(bottom_light);
+    al_destroy_bitmap(left_light);
+    al_destroy_sample(wrong_sequence_music);
+    al_destroy_sample(correct_sequence_music);
+    al_destroy_sample(top_beep);
+    al_destroy_sample(right_beep);
+    al_destroy_sample(bottom_beep);
+    al_destroy_sample(left_beep);
+    al_destroy_sample(highscore_music);
     al_destroy_event_queue(event_queue);
-    al_uninstall_mouse();
-    al_destroy_sample(right_beep);      //DA SEGMENTATION FAULT Y NO SE POR KE
-    al_destroy_sample(left_beep);       //DA SEGMENTATION FAULT Y NO SE POR KE
-    al_destroy_sample(top_beep);        //DA SEGMENTATION FAULT Y NO SE POR KE
-    al_destroy_sample(bottom_beep);     //DA SEGMENTATION FAULT Y NO SE POR KE
     al_uninstall_audio();
+    al_uninstall_system();
 }
 
 int get_event(void)
@@ -384,7 +492,7 @@ void play_beep(int button)
 void turn_light_on (int button)
 {
     /* al dibujar solo el fondo, se "apagan" todos los botones */
-    draw_bg_and_hs();  
+    draw_background_and_scores();  
     
     /* "encender" el boton presionado */ 
     switch (button)
@@ -412,7 +520,7 @@ void turn_light_on (int button)
 }
 
 int kb_or_mouse (void)
-{   //FALTA PONER EN DISPLAY EL CARTEL QUE LE DIGA AL USUARIO QUE TIENE QUE ELEGIR
+{
     
     static int source_of_events = NO_SOURCE;
     ALLEGRO_EVENT ev;   /* Contiene los eventos captados */
@@ -420,15 +528,28 @@ int kb_or_mouse (void)
     /* Solo se entra en la primera invocacion ya que ahi se elige mouse o teclado*/
     while ( source_of_events == NO_SOURCE ) 
     {
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*0), ALLEGRO_ALIGN_LEFT, " To play with the keyboard" );
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*1), ALLEGRO_ALIGN_LEFT, "press any key" );
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*2), ALLEGRO_ALIGN_LEFT, " To play with the mouse" );
+        al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE*3), ALLEGRO_ALIGN_LEFT, "click it" );
+        al_flip_display();
+        
         al_wait_for_event(event_queue, &ev);
                 
         if (ev.type == ALLEGRO_EVENT_KEY_UP)
         {
+            
             source_of_events = SOURCE_KB;
+            draw_background_and_scores();
+            al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE), ALLEGRO_ALIGN_LEFT, "Keyboard selected" );
+            al_flip_display();
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
         {
             source_of_events = SOURCE_MOUSE;
+            draw_background_and_scores();
+            al_draw_text( font, al_map_rgb(255,255,255), (TOP_X + SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE), ALLEGRO_ALIGN_LEFT, "mouse selected" );
+            al_flip_display();
         }
     }
     /* Una vez que el usuario elige mouse o teclado, siempre se devuelve el codigo correspondiente a su eleccion */
@@ -436,10 +557,13 @@ int kb_or_mouse (void)
 }
 
 void new_highscore(int new_highscore)
-{
-    //descabecear los tamanios de los buffers con defines
-    
+{    
     highscore = new_highscore;      /* actualizar el highscore */
+    
+    ALLEGRO_SAMPLE_ID highscore_music_id;
+    
+    al_play_sample( highscore_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, &highscore_music_id );
+    
     /* Crear un arreglo de char con los ascii del highscore */
     char hs_value[4];
     snprintf( hs_value, sizeof(hs_value), "%d", highscore );
@@ -461,50 +585,19 @@ void new_highscore(int new_highscore)
     "close",
     ALLEGRO_MESSAGEBOX_OK_CANCEL
     );
+    
+    /* Una vez cerrado el pop up, detener la musica */
+    al_stop_sample( &highscore_music_id );
 }    
-    
-void draw_score_and_highscore()
-{    
-    /* Crear un arreglo de char con los ascii del highscore */
-    char hs_value[4];
-    snprintf( hs_value, sizeof(hs_value), "%d", highscore );   
-    
-    /* Crear un arreglo de char con los ascii de la palabra HIGHSCORE */
-    char hs_word[250];
-    strncpy( hs_word, "HIGHSCORE: ", 250);  
-    
-    /* Unir los dos arreglos, importante que el primer arreglo tenga suficiente 
-     * tamano como para contenter a los dos juntos */ 
-    char * hs_final = strncat( hs_word, hs_value, 250 - strlen(hs_word) );  
-    
-    /* Dibujar el highscore */
-    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/8), ALLEGRO_ALIGN_LEFT, hs_final );
-   
-/* Repetir el procedimiento para el score actual */
-    
-    char s_value[4];
-    snprintf( s_value, sizeof(s_value), "%d", score );
-   
-    char s_word[19];
-    strncpy( s_word, "CURRENT SCORE: ", 250);
-    
-    char * s_final = strncat( s_word, s_value, 250 - strlen(s_word) );
-    
-    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_W/4), (SCREEN_H/6), ALLEGRO_ALIGN_LEFT, s_final );
 
-/* NOTA: esta funcion no los pone en pantalla, 
- * solo los carga para que aparezcan cuando se 
- * invoque a al_flip_display() */
- }
-
-void wrong_attempt ( void )
+void wrong_sequence ( void )
 {
     al_play_sample( wrong_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
     int i;
     for ( i = WRONG_SEQUENCE_MUSIC_TIME/0.2 ; i > 0 ; i-- )
     /* Prender y apagar todos los botones hasta que se termine la musica */
     {
-        draw_bg_and_hs();
+        draw_background_and_scores();
         al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
         al_draw_bitmap(right_light, RIGHT_X, RIGHT_Y - SPRITE_H, 0);
         al_draw_bitmap(top_light, TOP_X, TOP_Y - SPRITE_H, 0);
@@ -512,17 +605,17 @@ void wrong_attempt ( void )
         al_flip_display();
         al_rest(0.1);
         
-        draw_bg_and_hs();  
+        draw_background_and_scores();  
         al_flip_display();
         al_rest(0.1);
     }
 }
 
-void correct_attempt ( void )
+void correct_sequence ( void )
 {
     al_play_sample( correct_sequence_music, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL );
     
-    draw_bg_and_hs();  
+    draw_background_and_scores();  
     al_draw_bitmap(left_light, LEFT_X, LEFT_Y - SPRITE_H, 0);
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
@@ -536,17 +629,44 @@ void correct_attempt ( void )
     al_flip_display();
     al_rest(CORRECT_SEQUENCE_MUSIC_TIME/4);
     
-    /* Poner en display el fondo por medio segundo para 
-       que sea claro cuando cominenza la nueva secuencia */
-    draw_bg_and_hs();  
+    /* Poner en display solo el fondo por medio segundo 
+     * para que sea claro cuando cominenza la nueva 
+     * secuencia */
+    draw_background_and_scores();  
     al_flip_display();
     al_rest(0.5);
 }
 
-void draw_bg_and_hs ()
+void draw_background_and_scores ()
 {
     al_draw_bitmap(simon_background, 0, 0, 0);  /* dibujar el fondo */
-    draw_score_and_highscore();                 /* dibujar el highscore y el puntaje actual */
+
+    /* Crear un arreglo de char con los ascii del highscore */
+    char hs_value[4];
+    snprintf( hs_value, sizeof(hs_value), "%d", highscore );
+
+    /* Crear un arreglo de char con los ascii de la palabra HIGHSCORE */
+    char hs_word[250];
+    strncpy( hs_word, "HIGHSCORE: ", 250);  
+    
+    /* Unir los dos arreglos, importante que el primer arreglo tenga suficiente 
+     * tamano como para contenter a los dos juntos */ 
+    char * hs_final = strncat( hs_word, hs_value, 250 - strlen(hs_word) );  
+    
+    /* Dibujar el highscore */
+    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_MARGIN), (SCREEN_MARGIN + FONT_SIZE), ALLEGRO_ALIGN_LEFT, hs_final );
+   
+/* Repetir el procedimiento para el score actual */
+    
+    char s_value[4];
+    snprintf( s_value, sizeof(s_value), "%d", score );
+   
+    char s_word[19];
+    strncpy( s_word, "CURRENT SCORE: ", 250);
+    
+    char * s_final = strncat( s_word, s_value, 250 - strlen(s_word) );
+    
+    al_draw_text( font, al_map_rgb(255,255,255), (SCREEN_MARGIN), (SCREEN_MARGIN), ALLEGRO_ALIGN_LEFT, s_final );
 
 /* NOTA: esta funcion no los pone en pantalla, 
  * solo los carga para que aparezcan cuando se 
