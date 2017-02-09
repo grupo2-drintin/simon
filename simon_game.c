@@ -95,7 +95,8 @@ int simon_game (void)
     {
         srand(clock()); //para poder obtener numeros random
 
-        int event_source = al_kb_or_mouse();
+        al_turn_light_on(LIGHTS_OFF);   //para que muestre el display
+        int event_source = al_kb_or_mouse(); //elige el modo de input
      
         while (status == S_CONTINUE)  
         //se ejecuta si no hubo errores y el jugador no perdio
