@@ -104,9 +104,20 @@ int simon_game (void)
             write_cb(&correct_sequence, (char)(rand()%4));//agrega un color
             display_sequence(correct_sequence);//muestra toda la secuencia
 
-            if (user_attempt(correct_sequence) == WRONG_ATTEMPT)
+            if (user_attempt(correct_sequence) == SUCCESSFUL_ATTEMPT)
             //user attempt: turno del jugador
-            {   
+            {         
+                al_correct_attempt(); //indicar al jugador que gano un punto
+                
+                if (++current_score > old_highscore)
+                //actualizar el highscore si hace falta
+                {
+                    updated_highscore = current_score;
+                }
+                al_update_score(current_score);
+            }    
+            else
+            {
                 status = S_GAMEOVER; //si el jugador se equivoco termina simon
                 al_wrong_attempt();    //indicarle al usuario que perdio
                 
@@ -124,24 +135,13 @@ int simon_game (void)
                         fprintf(f_highscore, "%d", updated_highscore);
                         fclose(f_highscore);
                     }
-                }    
-                
-            }    
-            else
-            {
-                al_correct_attempt(); //indicar al jugador que gano un punto
-                
-                if (++current_score > old_highscore)
-                //actualizar el highscore si hace falta
-                {
-                    updated_highscore = current_score;
                 }
-                al_update_score(current_score);
+                
+                al_finalizacion();
+                //allegro:solo se finaliza si no hubo error en init
             }    
         }
-    }
-       
-    al_finalizacion();     //hay que finalizar aunque haya habido un error 
+    }   
     
 #else
 
@@ -159,9 +159,20 @@ int simon_game (void)
             write_cb(&correct_sequence, (char)(rand()%4));//agrega un color
             display_sequence(correct_sequence);//muestra toda la secuencia
 
-            if (user_attempt(correct_sequence) == WRONG_ATTEMPT)
+            if (user_attempt(correct_sequence) == SUCCESSFUL_ATTEMPT)
             //user attempt: turno del jugador
             {   
+                rpi_correct_attempt(); //indicar al jugador que gano un punto
+                
+                if (++current_score > old_highscore)
+                //actualizar el highscore si hace falta
+                {
+                    updated_highscore = current_score;
+                }
+            }    
+            else
+            {
+                
                 status = S_GAMEOVER; //si el jugador se equivoco termina simon
                 rpi_wrong_attempt();    //indicarle al usuario que perdio
                 
@@ -179,17 +190,6 @@ int simon_game (void)
                         fclose(f_highscore);
                     }
                 }    
-                
-            }    
-            else
-            {
-                rpi_correct_attempt(); //indicar al jugador que gano un punto
-                
-                if (++current_score > old_highscore)
-                //actualizar el highscore si hace falta
-                {
-                    updated_highscore = current_score;
-                }
             }    
         }
     }
